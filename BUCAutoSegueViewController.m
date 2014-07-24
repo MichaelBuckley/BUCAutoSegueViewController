@@ -9,18 +9,25 @@
 
 @implementation BUCAutoSegueViewController
 
+- (BOOL)shouldPerformSegueWithIdentifier:(NSString *)identifier sender:(id)sender
+{
+    BOOL shouldPerformSegue = YES;
+    
+    NSString *shouldPerformString = [@"shouldPerformSegue_" stringByAppendingString: identifier];
+    SEL shouldPerformSelector = NSSelectorFromString(shouldPerformString);
+    
+    if ([self respondsToSelector: shouldPerformSelector]) {
+        IMP imp = [self methodForSelector:shouldPerformSelector];
+        BOOL (*shouldPerformImp)(id, SEL) = (void *) imp;
+        shouldPerformSegue = shouldPerformImp(self, shouldPerformSelector);
+    }
+    
+    return shouldPerformSegue;
+}
+
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
     NSString *identifier = [segue identifier];
-    
-    NSString *prepareForSegueSelectorString = [NSString stringWithFormat:@"prepareForSegue_%@:", identifier];
-    SEL prepareForSegueSelector = NSSelectorFromString(prepareForSegueSelectorString);
-    
-    if ([self respondsToSelector:prepareForSegueSelector]) {
-        IMP imp = [self methodForSelector:prepareForSegueSelector];
-        void (*prepareForSegueImp)(id, SEL, NSString*) = (void *)imp;
-        prepareForSegueImp(self, prepareForSegueSelector, identifier);
-    }
     
     NSString *segueTargetString = [NSString stringWithFormat: @"setSegueTarget_%@:", identifier];
     SEL segueTargetSelector = NSSelectorFromString(segueTargetString);
@@ -29,6 +36,15 @@
         IMP imp = [self methodForSelector:segueTargetSelector];
         void (*segueTargetImp)(id, SEL, id) = (void *)imp;
         segueTargetImp(self, segueTargetSelector, [segue destinationViewController]);
+    }
+    
+    NSString *prepareForSegueSelectorString = [NSString stringWithFormat:@"prepareForSegue_%@:sender:", identifier];
+    SEL prepareForSegueSelector = NSSelectorFromString(prepareForSegueSelectorString);
+    
+    if ([self respondsToSelector:prepareForSegueSelector]) {
+        IMP imp = [self methodForSelector:prepareForSegueSelector];
+        void (*prepareForSegueImp)(id, SEL, UIStoryboardSegue *, id) = (void *)imp;
+        prepareForSegueImp(self, prepareForSegueSelector, segue, sender);
     }
 }
                       
