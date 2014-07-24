@@ -13,13 +13,13 @@
 {
     BOOL shouldPerformSegue = YES;
     
-    NSString *shouldPerformString = [@"shouldPerformSegue_" stringByAppendingString: identifier];
+    NSString *shouldPerformString = [NSString stringWithFormat:@"shouldPerformSegue_%@:", identifier];
     SEL shouldPerformSelector = NSSelectorFromString(shouldPerformString);
     
     if ([self respondsToSelector: shouldPerformSelector]) {
         IMP imp = [self methodForSelector:shouldPerformSelector];
-        BOOL (*shouldPerformImp)(id, SEL) = (void *) imp;
-        shouldPerformSegue = shouldPerformImp(self, shouldPerformSelector);
+        BOOL (*shouldPerformImp)(id, SEL, id) = (void *) imp;
+        shouldPerformSegue = shouldPerformImp(self, shouldPerformSelector, sender);
     }
     
     return shouldPerformSegue;
